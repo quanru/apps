@@ -273,8 +273,11 @@ function ConnectDialog({
   const scopeInput = useRef<FocusHandle>(null);
   const needsToken = tokenProviders.includes(provider);
   const vercel = provider === Provider.VERCEL;
+  // The collector rejects Vercel connections without a team ID.
+  const complete =
+    (!needsToken || secret.trim() !== "") && (!vercel || scope.trim() !== "");
   const submit = async () => {
-    if (!session.collector || (needsToken && !secret.trim())) return;
+    if (!session.collector || !complete) return;
     setBusy(true);
     try {
       await createClient(
@@ -303,7 +306,7 @@ function ConnectDialog({
       action={{
         label: Copy.connect,
         loading: busy,
-        disabled: needsToken && !secret.trim(),
+        disabled: !complete,
         onPress: () => void submit(),
       }}
     >
